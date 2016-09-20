@@ -1,17 +1,40 @@
-if ! geth --testnet --exec 'console.log("OK")' attach 2&>/dev/null  
+#!/bin/bash
+ETH=geth
+
+# execute eth and redirect all output to /dev/null
+if ! $ETH --testnet --exec 'console.log("OK")' attach 2&>/dev/null  
 then
-    geth --testnet --ws --fast 2&>/tmp/geth.log & 
+	# run eth webserver 
+    $ETH --testnet --ws --fast 2&>/tmp/$ETH.log & 
+    # get server process PID
     GETH_PID=`jobs -p`
-    until grep -q 'WebSocket endpoint opened:' /tmp/geth.log
+    # until webserver is not created look for it
+    until grep -q 'WebSocket endpoint opened:' /tmp/$ETH.log
     do
         sleep 3
     done
-    URL=`grep 'WebSocket endpoint opened:' /tmp/geth.log | sed 's/^.*WebSocket endpoint opened: //'`
+    # save the URL of server for future requests
+    URL=`grep 'WebSocket endpoint opened:' /tmp/$ETH.log | sed 's/^.*WebSocket endpoint opened: //'`
 fi
- 
-ACCOUNTS=`geth --testnet --exec 'eth.accounts' attach $URL | tr -d ',[]'`
-echo $ACCOUNTS
 
-geth --testnet --exec "web3.fromWei(eth.getBalance($ACCOUNTS), 'ether');" attach $URL
+# get the accounts from server 
+ACCOUNTS=`$ETH --testnet --exec 'eth.accounts' attach $URL | tr -d ',[]'`
 
+# show all accounts for selection
+INDEX=0 # index of account
+for ACCOUNT in $ACCOUNTS
+do
+	echo $INDEX: $ACCOUNT
+	INDEX=$(($INDEX+1))
+done
+
+printf "Please, type the index of any account:\n"
+read INDEX
+
+# get balance by using JavaScript Web3 API
+BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance(${ACCOUNTS[$INDEX]}), 'ether');" attach $URL`
+
+printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n"
+
+# kill server
 kill $GETH_PID
