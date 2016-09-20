@@ -2,6 +2,9 @@
 
 ETH=geth
 
+OUTFILE=/tmp/obalance-$$
+ERROR=/tmp/ebalance-$$
+
 end () {
     # kill server
     kill $GETH_PID
@@ -25,42 +28,27 @@ then
 fi
 
 # get the accounts from server 
-ACCOUNTS=`$ETH --testnet --exec 'eth.accounts' attach $URL | tr -d ',[]'`
+STRACC=`$ETH --testnet --exec 'eth.accounts' attach $URL | tr -d ',[]'`
+ACCOUNTS=($STRACC)
 
-# show all accounts for selection
+# concat all accounts for selection
 INDEX=0 # index of account
 TEXT=""
-for ACCOUNT in $ACCOUNTS
+for ACCOUNT in ${ACCOUNTS[@]}
 do
-	TEXT+=$INDEX:" "
-	TEXT+=$ACCOUNT
-	TEXT+="\n"
+	TEXT+=$INDEX:" "$ACCOUNT"\n"
 	INDEX=$(($INDEX+1))
 done
-
-#printf $LIST
 
 TEXT+="\nPlease, type the index of any account:"
 while true
 do
-	gdialog --inputbox "$TEXT" || end
-#	$DIALOG --inputbox "Please, type the index of any account:\n" || end
-#	if cat $FILE1 | $CALC > $FILE2 2>$ERROR
-#	then
-#		MSG="`$GETTEXT \"Result:\"` `cat $FILE2`\\n\\n`$GETTEXT \"Continue?\"`"
-#		$DIALOG --yesno "$MSG" 7 20 || end
-#	else
-#		MSG="`$GETTEXT \"Error:\"`\\n\\n`cat $ERROR`\\n\\n`$GETTEXT \"Continue?\"`"
-#		$DIALOG --yesno "$MSG" 10 35 || end
-#	fi
+	gdialog --inputbox "$TEXT" 2> $OUTFILE || end
+
+    INDEX=$(cat $OUTFILE)
+    BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance(${ACCOUNTS[$INDEX]}), 'ether');" attach $URL`
+
+    MSG="The balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\nDo you want to check another wallet?"
+    gdialog --yesno "$MSG" || end
 done
-
-#printf 
-#read INDEX
-
-# get balance by using JavaScript Web3 API
-#BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance(${ACCOUNTS[$INDEX]}), 'ether');" attach $URL`
-
-#printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n"
-
 
