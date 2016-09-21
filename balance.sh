@@ -2,6 +2,20 @@
 
 ETH=$(which geth)
 
+# check existance of Ethereum
+# ret - if exists returns OK
+check_eth() {
+    STATUS=""
+    if [ -z $ETH ];  
+    then
+        STATUS="Please, install Ethereum CLI based on GoLang (geth), or if you already have it, set the directory in PATH variable."
+    else 
+        STATUS="OK"
+    fi
+
+    echo $STATUS
+}
+
 # runs Ethereum server
 # ret - URL,PID
 run_server() {
@@ -74,7 +88,14 @@ end() {
 # main function
 # param:
 #   $1 - option (-a, -c)
-balance_main() {
+cli_main() {
+    STATUS=$(check_eth)
+    if [ $STATUS != "OK" ];
+    then
+        echo $STATUS
+        exit
+    fi
+
     RET=$(run_server)
     SERVER_URL=$(echo $RET | awk -F',' '{print $1}')
     ETH_PID=$(echo $RET | awk -F',' '{print $2}')
@@ -98,10 +119,7 @@ balance_main() {
     end $ETH_PID
 }
 
-if [ -z $ETH ];  
+if [ $0 = "balance.sh" ] || [ $0 = "balance" ];
 then
-    echo "Please, install Ethereum CLI based on GoLang (geth), or if you already have it, set the directory in PATH variable."
-    exit  
-else 
-    balance_main
+    cli_main
 fi
