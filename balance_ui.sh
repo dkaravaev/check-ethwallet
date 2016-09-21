@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source balance.sh
+source utils.sh
 
 OUTFILE=/tmp/obalance-$$
 
@@ -9,7 +9,7 @@ if [ -z $DISPLAY ]
 then
     DIALOG=dialog
 else
-    which gdialog 2> /dev/null && DIALOG=gdialog || DIALOG=dialog
+    which gdialog > /dev/null && DIALOG=gdialog || DIALOG=dialog
 fi
 
 # MUST BE IN THE END OF THE MAIN!!!
