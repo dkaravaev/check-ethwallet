@@ -16,18 +16,19 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: calc_ui:24
-msgid "Enter expression:"
-msgstr "Чего посчитать?"
+#: balance_ui:24
+msgid "Select account:"
+msgstr "Выберете аккаунт:"
 
-#: calc_ui:28
-msgid "Result:"
-msgstr "Итого:"
+#: balance_ui:28
+msgid "Do you want to check another wallet?"
+msgstr "Будем проверять еще один кошелек?"
 
-#: calc_ui:28 calc_ui:31
-msgid "Continue?"
-msgstr "Продолжаем?"
+#: balance_ui:31
+msgid "Error!"
+msgstr "Ошибка"
 
-#: calc_ui:31
-msgid "Error:"
-msgstr "Ошибочка вышла:"
+#: balance_ui:32
+msgid "You have:"
+msgstr "У Вас:"
+

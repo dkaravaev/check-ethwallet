@@ -1,7 +1,8 @@
 #!/bin/bash
 
-BALANCE="./balance.sh"
+BALANCE="balance"
 OUTFILE=/tmp/obalance-$$
+GETTEXT="gettext -d balance_ui"
 
 # check ability to display
 # ret - return value of DIALOG variable
@@ -32,26 +33,28 @@ help () {
 # main function
 ui_main() {
     NAME="EtherChecker 1.0"
-    DIALOG=$(set_dialog)
+    DIALOG=dialog
 
     STATUS=$($BALANCE -e)
     if [ $STATUS != "OK" ];
     then
-        $DIALOG --title "Error!" --msgbox "$STATUS" 6 20
+        $DIALOG --title "`$GETTEXT \"Error!\"`" --msgbox "$STATUS" 6 20
         exit
     fi
 
     OPTIONS=($($BALANCE -a))
-    
+
     while true
     do
-        $DIALOG --keep-tite --title "$NAME" --menu "Select account:" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end 
+        $DIALOG --keep-tite --title "$NAME" --menu "`$GETTEXT \"Select account:\"`" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end 
 
         INDEX=$(cat $OUTFILE)
-        INDEX=$(($INDEX-1))
         VALUE=$($BALANCE -i $INDEX)
+        
+        INDEX=$((2*$INDEX))
+        INDEX=$(($INDEX+1))
 
-        MSG="$VALUE\nDo you want to check another wallet?"
+        MSG="You have on ${OPTIONS[$INDEX]}: $VALUE eth.\nDo you want to check another wallet?"
         $DIALOG --title "$NAME" --yesno "$MSG" 10 50 || end
     done
 }

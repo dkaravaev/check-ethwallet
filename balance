@@ -73,21 +73,20 @@ get_balance() {
     INDEX=$1
     SERVER_URL=$2
     ACCOUNTS=${3}
-    RES=""
+    BALANCE=0
 
     if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
     then
         BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance(${ACCOUNTS[$INDEX]}), 'ether');" attach $SERVER_URL`
-        RES="Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
     else
-        RES="Unknown index!\n"
+        BALANCE=-1
     fi
 
-    echo $RES
+    echo $BALANCE
 }
 
 help () {
-    printf "Usage: $0 [-a | -i number | -h | -e].\na - show accounts.\ni - get account balance by index.\ne- check Ethereum CLI.\n"
+    printf "Usage: $0 [-a | -i number | -h | -e].\na - show accounts.\ni - get account balance by index.\ne - check Ethereum CLI.\n"
 }
 
 # MUST BE IN THE END OF THE MAIN!!!
@@ -132,18 +131,19 @@ cli_main() {
             end $ETH_PID
         elif [ $1 = "-i" ]; 
         then
-            printf "$(get_balance $2 $SERVER_URL ${ACCOUNTS[@]})"
+            printf "$(get_balance $2 $SERVER_URL ${ACCOUNTS[@]})\n"
             end $ETH_PID
         fi
     fi
-    
+
     while true
     do  
         printf "$(accounts2str ${ACCOUNTS[@]})"
         printf "Please, write index of account:\n"
         read INDEX
 
-        printf "$(get_balance $INDEX $SERVER_URL ${ACCOUNTS[@]})"
+        BALANCE="$(get_balance $INDEX $SERVER_URL ${ACCOUNTS[@]})"
+        printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
 
         printf "Do you want to check another account? (Y/N).\n"
         read ANS

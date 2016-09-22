@@ -1,6 +1,6 @@
 # default: on
 # description: The calculator server
-service calc
+service balance
 {
     flags       = REUSE
     socket_type = stream        
