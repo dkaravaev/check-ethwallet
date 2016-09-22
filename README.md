@@ -1,2 +1,2 @@
 # check-ethwallet
-Nothing complex yet. Just run 'make install' under root (<p style='color:red'>Nothing Harmful!</p>) command to places executbales to /usr/local/bin.
+Nothing complex yet. Just run 'make install' under root (<font color="red">Nothing Harmful!</font>) command to places executbales to /usr/local/bin.
