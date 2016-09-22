@@ -17,11 +17,8 @@ set_dialog() {
 
 # MUST BE IN THE END OF MAIN!!!
 # ret - ret of kill
-# params:
-#   $1 - PID
 end () {
     # close server
-    kill $1
     clear
     rm -f $OUTFILE
     exit
@@ -37,31 +34,25 @@ ui_main() {
     NAME="EtherChecker 1.0"
     DIALOG=$(set_dialog)
 
-
-    if [ $STATUS !=  ];
+    STATUS=$($BALANCE -e)
+    if [ $STATUS != "OK" ];
     then
         $DIALOG --title "Error!" --msgbox "$STATUS" 6 20
         exit
     fi
 
+    OPTIONS=($($BALANCE -a))
+    
     while true
     do
-        OPTIONS=()
-        INDEX=1
-        for ACCOUNT in ${ACCOUNTS[@]}:
-        do
-            OPTIONS+=($INDEX "$ACCOUNT")
-            INDEX=$(($INDEX+1))
-        done
-
-        $DIALOG --keep-tite --title "$NAME" --menu "Select account:" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end $ETH_PID
+        $DIALOG --keep-tite --title "$NAME" --menu "Select account:" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end 
 
         INDEX=$(cat $OUTFILE)
         INDEX=$(($INDEX-1))
-        BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL)
+        VALUE=$($BALANCE -i $INDEX)
 
-        MSG="The balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\nDo you want to check another wallet?"
-        $DIALOG --title "$NAME" --yesno "$MSG" 10 50 || end $ETH_PID
+        MSG="$VALUE\nDo you want to check another wallet?"
+        $DIALOG --title "$NAME" --yesno "$MSG" 10 50 || end
     done
 }
 

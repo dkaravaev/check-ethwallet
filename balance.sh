@@ -70,9 +70,20 @@ accounts2str() {
 #   $1 - account name
 #   $2 - SERVER_URL
 get_balance() {
-    # get balance by using JavaScript Web3 API
-    BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance($1), 'ether');" attach $2`
-    echo $BALANCE
+    INDEX=$1
+    SERVER_URL=$2
+    ACCOUNTS=${3}
+    RES=""
+
+    if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
+    then
+        BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance(${ACCOUNTS[$INDEX]}), 'ether');" attach $SERVER_URL`
+        RES="Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
+    else
+        RES="Unknown index!\n"
+    fi
+
+    echo $RES
 }
 
 help () {
@@ -100,18 +111,12 @@ cli_main() {
     fi
 
     STATUS=$(check_eth)
-    if [ ! -z $1 ] && [ $1 = "-e" ];
+    if $([ ! -z $1 ] && [ $1 = "-e" ]) || [ $STATUS != "OK" ];
     then
         echo $STATUS
         exit
     fi
     
-    if [ $STATUS != "OK" ];
-    then
-        echo $STATUS
-        exit
-    fi
-
     RET=$(run_server)
     SERVER_URL=$(echo $RET | awk -F',' '{print $1}')
     ETH_PID=$(echo $RET | awk -F',' '{print $2}')
@@ -127,31 +132,18 @@ cli_main() {
             end $ETH_PID
         elif [ $1 = "-i" ]; 
         then
-            INDEX=$2
-            if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
-            then
-                BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL) 
-                printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
-            else
-                printf "Unknown index!\n"
-            fi
+            printf "$(get_balance $2 $SERVER_URL ${ACCOUNTS[@]})"
             end $ETH_PID
         fi
     fi
-
+    
     while true
     do  
         printf "$(accounts2str ${ACCOUNTS[@]})"
         printf "Please, write index of account:\n"
         read INDEX
 
-        if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
-        then
-            BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL) 
-            printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
-        else
-            printf "Unknown index!\n"
-        fi
+        printf "$(get_balance $INDEX $SERVER_URL ${ACCOUNTS[@]})"
 
         printf "Do you want to check another account? (Y/N).\n"
         read ANS
