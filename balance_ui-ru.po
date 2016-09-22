@@ -20,15 +20,15 @@ msgstr ""
 msgid "Select account:"
 msgstr "Выберете аккаунт:"
 
-#: balance_ui:28
-msgid "Do you want to check another wallet?"
-msgstr "Будем проверять еще один кошелек?"
-
 #: balance_ui:31
 msgid "Error!"
 msgstr "Ошибка"
 
 #: balance_ui:32
-msgid "You have:"
-msgstr "У Вас:"
+msgid "You have on:"
+msgstr "У Вас на аккаунте:"
+
+#: balance_ui:28
+msgid "Do you want to check another wallet?"
+msgstr "Будем проверять еще один кошелек?"
 

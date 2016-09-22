@@ -33,7 +33,7 @@ help () {
 # main function
 ui_main() {
     NAME="EtherChecker 1.0"
-    DIALOG=dialog
+    DIALOG=$(set_dialog)
 
     STATUS=$($BALANCE -e)
     if [ $STATUS != "OK" ];
@@ -54,7 +54,9 @@ ui_main() {
         INDEX=$((2*$INDEX))
         INDEX=$(($INDEX+1))
 
-        MSG="You have on ${OPTIONS[$INDEX]}: $VALUE eth.\nDo you want to check another wallet?"
+        MSG="`$GETTEXT \"You have on:\"`"
+        MSG+=" ${OPTIONS[$INDEX]}: $VALUE eth. "
+        MSG+="`$GETTEXT \"Do you want to check another wallet?\"`"
         $DIALOG --title "$NAME" --yesno "$MSG" 10 50 || end
     done
 }
