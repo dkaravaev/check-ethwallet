@@ -1,18 +1,21 @@
 #!/bin/bash
 
-source utils.sh
-
+BALANCE="./balance.sh"
 OUTFILE=/tmp/obalance-$$
 
 # check ability to display
-if [ -z $DISPLAY ]
-then
+# ret - return value of DIALOG variable
+set_dialog() {
     DIALOG=dialog
-else
-    which gdialog > /dev/null && DIALOG=gdialog || DIALOG=dialog
-fi
+    if [ ! -z $DISPLAY ]
+    then
+        which gdialog > /dev/null && DIALOG=gdialog || DIALOG=dialog
+    fi
 
-# MUST BE IN THE END OF THE MAIN!!!
+    echo $DIALOG
+}
+
+# MUST BE IN THE END OF MAIN!!!
 # ret - ret of kill
 # params:
 #   $1 - PID
@@ -24,21 +27,22 @@ end () {
     exit
 }
 
+# help's you to get everything you need
+help () {
+    echo "Usage: $0 [ host port | -h]."
+}
+
 # main function
 ui_main() {
-    STATUS=$(check_eth)
-    if [ $STATUS != "OK" ];
+    NAME="EtherChecker 1.0"
+    DIALOG=$(set_dialog)
+
+
+    if [ $STATUS !=  ];
     then
         $DIALOG --title "Error!" --msgbox "$STATUS" 6 20
         exit
     fi
-
-    RET=$(run_server)
-    SERVER_URL=$(echo $RET | awk -F',' '{print $1}')
-    ETH_PID=$(echo $RET | awk -F',' '{print $2}')
-
-    STRACC=$(get_accounts $SERVER_URL)
-    ACCOUNTS=($STRACC)
 
     while true
     do
@@ -50,14 +54,14 @@ ui_main() {
             INDEX=$(($INDEX+1))
         done
 
-        $DIALOG --keep-tite --title "EtherChecker 1.0" --menu "Select account:" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end $ETH_PID
+        $DIALOG --keep-tite --title "$NAME" --menu "Select account:" 12 76 16 ${OPTIONS[@]} 2> $OUTFILE || end $ETH_PID
 
         INDEX=$(cat $OUTFILE)
         INDEX=$(($INDEX-1))
-
         BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL)
+
         MSG="The balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\nDo you want to check another wallet?"
-        $DIALOG --title "EtherChecker 1.0" --yesno "$MSG" 10 50 || end $ETH_PID
+        $DIALOG --title "$NAME" --yesno "$MSG" 10 50 || end $ETH_PID
     done
 }
 

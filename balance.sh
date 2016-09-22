@@ -1,6 +1,83 @@
 #!/bin/bash
 
-source utils.sh
+ETH=$(which geth)
+
+# check existance of Ethereum
+# ret - if exists returns OK
+check_eth() {
+    STATUS=""
+    if [ -z $ETH ];  
+    then
+        STATUS="Please, install Ethereum CLI based on GoLang (geth), or if you already have it, set the directory in PATH variable."
+    else 
+        STATUS="OK"
+    fi
+
+    echo $STATUS
+}
+
+# runs Ethereum server
+# ret - URL,PID
+run_server() {
+    # execute eth and redirect all output to /dev/null
+    if ! $ETH --testnet --exec 'console.log("OK")' attach 2&>/dev/null  
+    then
+        # run eth webserver 
+        $ETH --testnet --ws --fast 2&> /tmp/wallet-server.log & 
+        # get server process PID
+        PID=`jobs -p`
+        echo $1
+        # until webserver is not created look for it
+        until grep -q 'WebSocket endpoint opened:' /tmp/wallet-server.log
+        do
+            sleep 3
+        done
+        # save the URL of server for future requests
+        URL=`grep 'WebSocket endpoint opened:'  /tmp/wallet-server.log | sed 's/^.*WebSocket endpoint opened: //'`
+        echo $URL,$PID
+    fi
+}
+
+# get the accounts from server 
+# ret - string with accounts
+# params: 
+#   $1 - SERVER_URL
+get_accounts() {
+    STRACC=`$ETH --testnet --exec 'eth.accounts' attach $1 | tr -d ',[]'`
+    echo $STRACC
+}
+
+# concat accounts to text with indexes
+# ret - formated string
+# params:
+#   $1 - array with accounts
+accounts2str() {
+    ACCOUNTS=${1}
+    # concat all accounts for selection
+    INDEX=0 # index of account
+    TEXT=""
+    for ACCOUNT in ${ACCOUNTS[@]}
+    do
+        TEXT+=$INDEX" "$ACCOUNT"\n"
+        INDEX=$(($INDEX+1))
+    done
+    echo $TEXT
+}
+
+# get balance by account name
+# ret - BALANCE
+# params: 
+#   $1 - account name
+#   $2 - SERVER_URL
+get_balance() {
+    # get balance by using JavaScript Web3 API
+    BALANCE=`$ETH --testnet --exec "web3.fromWei(eth.getBalance($1), 'ether');" attach $2`
+    echo $BALANCE
+}
+
+help () {
+    printf "Usage: $0 [-a | -i number | -h | -e].\na - show accounts.\ni - get account balance by index.\ne- check Ethereum CLI.\n"
+}
 
 # MUST BE IN THE END OF THE MAIN!!!
 # ret - ret of kill
@@ -13,8 +90,22 @@ end() {
 }
 
 # main function
+# params:
+#   commandline args
 cli_main() {
+    if [ ! -z $1 ] && [ $1 = "-h" ];
+    then
+        help
+        exit
+    fi
+
     STATUS=$(check_eth)
+    if [ ! -z $1 ] && [ $1 = "-e" ];
+    then
+        echo $STATUS
+        exit
+    fi
+    
     if [ $STATUS != "OK" ];
     then
         echo $STATUS
@@ -28,21 +119,47 @@ cli_main() {
     STRACC=$(get_accounts $SERVER_URL)
     ACCOUNTS=($STRACC)
 
-    printf "$(accounts2str ${ACCOUNTS[@]})"
-    printf "Please, type the index of any account:\n"
-    read INDEX
-
-    # check if index is a correct integer
-    if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
+    if [ ! -z $1 ];
     then
-        BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL)
-        printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n"
-    else
-        printf "Unknown index!\n"
+        if [ $1 = "-a" ];
+        then
+            printf "$(accounts2str ${ACCOUNTS[@]})"
+            end $ETH_PID
+        elif [ $1 = "-i" ]; 
+        then
+            INDEX=$2
+            if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
+            then
+                BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL) 
+                printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
+            else
+                printf "Unknown index!\n"
+            fi
+            end $ETH_PID
+        fi
     fi
 
-    end $ETH_PID
+    while true
+    do  
+        printf "$(accounts2str ${ACCOUNTS[@]})"
+        printf "Please, write index of account:\n"
+        read INDEX
+
+        if [[ $INDEX =~ ^[0-9]+$ ]] && [[ $INDEX < ${#ACCOUNTS[@]} ]];
+        then
+            BALANCE=$(get_balance ${ACCOUNTS[$INDEX]} $SERVER_URL) 
+            printf "Balance of ${ACCOUNTS[$INDEX]}: $BALANCE eth.\n" 
+        else
+            printf "Unknown index!\n"
+        fi
+
+        printf "Do you want to check another account? (Y/N).\n"
+        read ANS
+        if [ $ANS != "Y" ];
+        then
+            end $ETH_PID
+        fi
+    done
 }
 
-
-cli_main
+cli_main "$@"
