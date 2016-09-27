@@ -32,3 +32,6 @@ msgstr "У Вас на аккаунте:"
 msgid "Do you want to check another wallet?"
 msgstr "Будем проверять еще один кошелек?"
 
+#: balance_ui:28
+msgid "You need to install Ethereum CLI based on GoLang, or set the PATH variable if you already have it."
+msgstr "Вам нужно установить консольную утилиту Ethereum написанную на Go, или же, если у Вас она уже есть, то установите значение пременной PATH."

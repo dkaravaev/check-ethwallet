@@ -36,7 +36,7 @@ ui_main() {
     DIALOG=$(set_dialog)
 
     STATUS=$($BALANCE -e)
-    if [ $STATUS != "OK" ];
+    if [[ $STATUS != *"OK" ]];
     then
         $DIALOG --title "`$GETTEXT \"Error!\"`" --msgbox "$STATUS" 6 20
         exit

@@ -8,7 +8,7 @@ check_eth() {
     STATUS=""
     if [ -z $ETH ];  
     then
-        STATUS="Please, install Ethereum CLI based on GoLang (geth), or if you already have it, set the directory in PATH variable."
+        STATUS="You need to install Ethereum CLI based on GoLang, or set the PATH variable if you already have it."
     else 
         STATUS="OK"
     fi
@@ -110,12 +110,12 @@ cli_main() {
     fi
 
     STATUS=$(check_eth)
-    if $([ ! -z $1 ] && [ $1 = "-e" ]) || [ $STATUS != "OK" ];
+    if [[ $STATUS != *"OK" ]] || $([ ! -z $1 ] && [ $1 = "-e" ]);
     then
         echo $STATUS
-        exit
+        exit 
     fi
-    
+
     RET=$(run_server)
     SERVER_URL=$(echo $RET | awk -F',' '{print $1}')
     ETH_PID=$(echo $RET | awk -F',' '{print $2}')
