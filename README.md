@@ -20,7 +20,7 @@ Usage:
 0. If you want to run CLI version of programm, you need to type in terminal command **balance** standalone or with options:
 
 	* -a - get account table
-	* -i number  get account balance by index in account table.
+	* -i number - get account balance by index in account table.
 	* -h - help.
 	* -e - check existance of Ethereum CLI.
 
