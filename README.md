@@ -19,10 +19,10 @@ Usage:
 
 0. If you want to run CLI version of programm, you need to type in terminal command **balance** standalone or with options:
 
-i. -a - get account table
-ii. -i number  get account balance by index in account table.
-iii. -h - help.
-iiii. -e - check existance of Ethereum CLI.
+..1. -a - get account table
+..2. -i number  get account balance by index in account table.
+..3. -h - help.
+..4. -e - check existance of Ethereum CLI.
 
 1. If you want to run UI version in terminal you need to set **DISPLAY** shell variable to empty string and type in terminal **balance_ui**.
 
