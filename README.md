@@ -9,8 +9,6 @@ You need:
 
 1. Ethereum CLI based on GoLang (geth);
 
-2. gdialog (Installs automatically with make install).
-
 Installation:
 
 Just run: **make install** as a superuser.
